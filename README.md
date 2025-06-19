@@ -21,3 +21,7 @@ kctl top service --sort-by memory --sort-by memory
 ```bash
 kctl top service --s memory -H
 ```
+### For Live Update
+```bash
+watch -n 5 --no-title kctl top service -s cpu -H
+```
