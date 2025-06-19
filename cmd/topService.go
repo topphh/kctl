@@ -70,12 +70,12 @@ func topService() error {
 		})
 	}
 
-	fmt.Printf("TOTAL SERVICES: %v\tTOTAL POD:%v\n", len(serviceInfo.Services), serviceInfo.TotalPod)
-
+	var totalCpu, totalMemory int64
 	table := make([][]string, len(serviceInfo.Services)+1)
-	table[0] = []string{"name", "pod", "cpu", "memory"}
 	for i, service := range serviceInfo.Services {
 		var podCount, cpu, memory string
+		totalCpu += service.Cpu
+		totalMemory += service.Memory
 
 		podCount = fmt.Sprint(service.PodCount)
 		if humanReadable {
@@ -88,6 +88,18 @@ func topService() error {
 
 		table[i+1] = []string{service.Name, podCount, cpu, memory}
 	}
+
+	table[0] = make([]string, 4)
+	table[0][0] = fmt.Sprintf("Services %v", len(serviceInfo.Services))
+	table[0][1] = fmt.Sprintf("Pod %v", serviceInfo.TotalPod)
+	if humanReadable {
+		table[0][2] = fmt.Sprintf("Cpu %v", format.CpuInfo(totalCpu))
+		table[0][3] = fmt.Sprintf("Memory %v", format.Bytes(totalMemory))
+	} else {
+		table[0][2] = fmt.Sprintf("Cpu %v", totalCpu)
+		table[0][3] = fmt.Sprintf("Memory %v", totalMemory)
+	}
+
 	display.PrintTable(table)
 	return nil
 }
