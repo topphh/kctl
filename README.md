@@ -1,12 +1,23 @@
-Usage:
+## Usage
 
-install:
+### Installation
+```bash
 go build && go install
+```
 
-to get all available commands:
+### Get Help
+To list all available commands and options:
+```bash
 kctl --help
+```
 
-sample command:
-kctl top service --sort-by memory --sort-by memory 
-sortened version:
+### Example Command
+Display services sorted by memory usage:
+```bash
+kctl top service --sort-by memory --sort-by memory
+```
+
+### Shortened Version
+```bash
 kctl top service --s memory -H
+```
