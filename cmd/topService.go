@@ -53,30 +53,31 @@ func topService() error {
 
 	switch sortBy {
 	case "pod":
-		sort.Slice(serviceInfo.Services, func(i, j int) bool {
-			return serviceInfo.Services[i].PodCount > serviceInfo.Services[j].PodCount
+		sort.Slice(serviceInfo, func(i, j int) bool {
+			return serviceInfo[i].PodCount > serviceInfo[j].PodCount
 		})
 	case "cpu":
-		sort.Slice(serviceInfo.Services, func(i, j int) bool {
-			return serviceInfo.Services[i].Cpu > serviceInfo.Services[j].Cpu
+		sort.Slice(serviceInfo, func(i, j int) bool {
+			return serviceInfo[i].Cpu > serviceInfo[j].Cpu
 		})
 	case "memory":
-		sort.Slice(serviceInfo.Services, func(i, j int) bool {
-			return serviceInfo.Services[i].Memory > serviceInfo.Services[j].Memory
+		sort.Slice(serviceInfo, func(i, j int) bool {
+			return serviceInfo[i].Memory > serviceInfo[j].Memory
 		})
 	default:
-		sort.Slice(serviceInfo.Services, func(i, j int) bool {
-			return serviceInfo.Services[i].Name < serviceInfo.Services[j].Name
+		sort.Slice(serviceInfo, func(i, j int) bool {
+			return serviceInfo[i].Name < serviceInfo[j].Name
 		})
 	}
 
-	var totalCpu, totalMemory int64
-	table := make([][]string, len(serviceInfo.Services)+1)
-	for i, service := range serviceInfo.Services {
-		var podCount, cpu, memory string
+	var totalPod, totalCpu, totalMemory int64
+	table := make([][]string, len(serviceInfo)+1)
+	for i, service := range serviceInfo {
+		totalPod += service.PodCount
 		totalCpu += service.Cpu
 		totalMemory += service.Memory
 
+		var podCount, cpu, memory string
 		podCount = fmt.Sprint(service.PodCount)
 		if humanReadable {
 			cpu = format.CpuInfo(service.Cpu)
@@ -90,8 +91,8 @@ func topService() error {
 	}
 
 	table[0] = make([]string, 4)
-	table[0][0] = fmt.Sprintf("Services %v", len(serviceInfo.Services))
-	table[0][1] = fmt.Sprintf("Pod %v", serviceInfo.TotalPod)
+	table[0][0] = fmt.Sprintf("Services %v", len(serviceInfo))
+	table[0][1] = fmt.Sprintf("Pod %v", totalPod)
 	if humanReadable {
 		table[0][2] = fmt.Sprintf("Cpu %v", format.CpuInfo(totalCpu))
 		table[0][3] = fmt.Sprintf("Memory %v", format.Bytes(totalMemory))

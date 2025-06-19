@@ -11,19 +11,14 @@ import (
 	"k8s.io/metrics/pkg/client/clientset/versioned"
 )
 
-type KubeServiceTops struct {
-	TotalPod int64
-	Services []ServiceInfo
-}
-
-type ServiceInfo struct {
+type Service struct {
 	Name     string
 	PodCount int64
 	Cpu      int64
 	Memory   int64
 }
 
-func GetKubeServiceTops() (*KubeServiceTops, error) {
+func GetKubeServiceTops() ([]*Service, error) {
 	kubeconfig := filepath.Join(GetHomeDir(), ".kube", "config")
 	config, err := clientcmd.BuildConfigFromFlags("", kubeconfig)
 	if err != nil {
@@ -40,9 +35,7 @@ func GetKubeServiceTops() (*KubeServiceTops, error) {
 		return nil, err
 	}
 
-	res := &KubeServiceTops{}
-
-	serviceNameToServiceInfo := make(map[string]*ServiceInfo)
+	serviceNameToServiceInfo := make(map[string]*Service)
 
 	for _, podMetrics := range podMetricsList.Items {
 
@@ -59,21 +52,20 @@ func GetKubeServiceTops() (*KubeServiceTops, error) {
 		podnameSplit := strings.Split(podMetrics.Name, "-")
 		serviceName := podnameSplit[0]
 		if serviceNameToServiceInfo[serviceName] == nil {
-			serviceNameToServiceInfo[serviceName] = &ServiceInfo{}
+			serviceNameToServiceInfo[serviceName] = &Service{}
 			serviceNameToServiceInfo[serviceName].Name = serviceName
 		}
 
-		res.TotalPod++
 		serviceNameToServiceInfo[serviceName].PodCount++
 		serviceNameToServiceInfo[serviceName].Cpu += totalCPU
 		serviceNameToServiceInfo[serviceName].Memory += totalMem
 
 	}
 
+	res := make([]*Service, 0, len(serviceNameToServiceInfo))
 	for _, serviceInfo := range serviceNameToServiceInfo {
-		res.Services = append(res.Services, *serviceInfo)
+		res = append(res, serviceInfo)
 	}
-
 	return res, nil
 }
 
